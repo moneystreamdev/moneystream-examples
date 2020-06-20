@@ -1,0 +1,42 @@
+<head>
+    <!-- set to your paymail or BSV Address -->
+    <meta name="monetization" content="1KUrv2Ns8SwNkLgVKrVbSHJmdXLpsEvaDf">
+  
+    <script>
+      const adCode = '<div style="border:1px solid #f00;color:red;margin:20px">Ad! Buy product A! Ad!</div>'
+      function showAds () {
+        document.getElementById('ad').innerHTML = adCode
+      }
+  
+      function removeAds () {
+        document.getElementById('ad').remove()
+      }
+  
+      let hasPaid = false
+      if (document.monetization) {
+        document.monetization.addEventListener('monetizationstart', () => {
+          hasPaid = true
+          removeAds()
+        })
+      }
+  
+      window.addEventListener('load', () => {
+        if (!document.monetization) {
+          showAds()
+        } else {
+          setTimeout(() => {
+            if (!hasPaid) {
+              showAds()
+            }
+          }, 3000)
+        }
+      })
+    </script>
+  </head>
+  
+  <body>
+    <div id="ad">
+    </div>
+  
+    Here's some real content.
+  </body>
