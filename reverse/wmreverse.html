@@ -1,0 +1,94 @@
+<head>
+    <!-- <meta name="monetization" content="1KUrv2Ns8SwNkLgVKrVbSHJmdXLpsEvaDf"> -->
+  
+    <script>
+      let total = 0
+      let scale
+
+      function showMonetizationState () {
+        document.getElementById('state').innerText = document.monetization.state
+      }
+  
+      if (document.monetization) {
+        document.monetization.addEventListener('monetizationstop', showMonetizationState)
+        document.monetization.addEventListener('monetizationpending', showMonetizationState)
+        document.monetization.addEventListener('monetizationstart', showMonetizationState)
+      }
+  
+      window.addEventListener('load', () => {
+        if (!document.monetization) {
+          document.getElementById('state').innerText = 'Not enabled in browser'
+        } else {
+          showMonetizationState()
+        }
+  
+        const stopButton = document.getElementById('stop-button')
+        const startButton = document.getElementById('start-button')
+        const monetizationTag = document.querySelector('meta[name="monetization"]')
+
+        var myTimer = null
+
+        stopButton.addEventListener('click', () => {
+          clearInterval(myTimer)
+          stopButton.disabled = true
+          startButton.disabled = false
+        })
+  
+        startButton.addEventListener('click', () => {
+          myTimer = setInterval(onSendMoney, 2000)
+          stopButton.disabled = false
+          startButton.disabled = true
+        })
+
+        let sendAmount = 0
+        function onSendMoney() {
+          // authorize faucet to send money to user
+          // https://cash.bitcoinofthings.com/
+          // get response
+          sendAmount += 1
+          // fire reverse monetizationprogress
+          whenReverseMonetizationProgress({
+            assetScale: 1,
+            assetCode:"USD",
+            amount: sendAmount
+          })
+        }
+
+      })
+
+      function whenReverseMonetizationProgress(payment) {
+          // initialize currency and scale on first progress event
+          if (total === 0) {
+            scale = payment.assetScale
+            document.getElementById('currency').innerText = payment.assetCode
+          }
+          total += Number(payment.amount)
+          const formatted = (total * Math.pow(10, -scale)).toFixed(scale)
+          document.getElementById('total').innerText = formatted
+        }
+
+    </script>
+  </head>
+  
+  <body>
+    <div id="loading">
+      Current Monetization State: <span id="state"></span>
+    </div>
+  
+    <button id="stop-button" disabled>Stop Monetization</button>
+    <button id="start-button" >Start Monetization</button>
+
+    <p>
+      You have received
+      <span id="total">nothing (yet)</span>
+      <span id="currency"></span>
+    </p>
+
+
+    <div class="column" style="background-color:white;">
+      <iframe width="100%" height="100%" src="https://www.youtube.com/embed/7PHTNPs34kU" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>
+       <center> <p align="left">To prepare for the Directorial duties for Lord Timmy, Ted completed the Ron Howard Masterclass and enrolled in a college filmmaking course to shoot this low budget Kurosawa/Tarantino-esque Solo Project, "The Fat Samurai."  This short film was shot in four hours over one day for under $1,000.</p>	</center> 
+    </div>
+
+
+  </body>
