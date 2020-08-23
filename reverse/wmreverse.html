@@ -2,11 +2,16 @@
     <!-- <meta name="monetization" content="1KUrv2Ns8SwNkLgVKrVbSHJmdXLpsEvaDf"> -->
   
     <script>
+      let sessionId = null
+      let payTo = "133hMAzFDT4R8KRUqoQggv1UvcuyePzRn5"
       let total = 0
+      let sendAmount = 0
       let scale
 
-      function showMonetizationState () {
-        document.getElementById('state').innerText = document.monetization.state
+      function showMonetizationState (newState) {
+        console.log(newState)
+        document.getElementById('state').innerText 
+          = newState || document.monetization.state
       }
   
       if (document.monetization) {
@@ -16,6 +21,7 @@
       }
   
       window.addEventListener('load', () => {
+        document.getElementById('address').value = payTo
         if (!document.monetization) {
           document.getElementById('state').innerText = 'Not enabled in browser'
         } else {
@@ -28,55 +34,96 @@
 
         var myTimer = null
 
-        stopButton.addEventListener('click', () => {
+        async function stopSession() {
           clearInterval(myTimer)
+          const payment = await onSendMoney('stop')
+          console.log(payment)
+          this.showMonetizationState(`You got paid! See tx ${payment?.txid}`)
+        }
+
+        stopButton.addEventListener('click', async () => {
+          await stopSession()
           stopButton.disabled = true
           startButton.disabled = false
         })
+
+        function startSession() {
+          showMonetizationState(`starting...`)
+          sessionId = create_UUID()
+          console.log(`session ${sessionId}`)
+          myTimer = setInterval(onSendMoney, 2000)
+        }
   
         startButton.addEventListener('click', () => {
-          myTimer = setInterval(onSendMoney, 2000)
+          startSession()
           stopButton.disabled = false
           startButton.disabled = true
         })
 
-        let sendAmount = 0
-        function onSendMoney() {
+        async function onSendMoney(method) {
           // authorize faucet to send money to user
-          // https://cash.bitcoinofthings.com/
-          // get response
-          sendAmount += 1
-          // fire reverse monetizationprogress
-          whenReverseMonetizationProgress({
-            assetScale: 1,
-            assetCode:"USD",
-            amount: sendAmount
+          const dto = {
+            session: sessionId,
+            payTo: payTo
+          }
+          const methodToCall = method || 'progress'
+          let url = `https://cash.bitcoinofthings.com/faucet/${methodToCall}`
+          url = `http://localhost:9900/faucet/${methodToCall}`
+          fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(dto)
+          }).then(function(response) {
+            return response.json()
+          }).then(function(data) {
+            console.log(data)
+            sendAmount = data.amount
+            // fire reverse monetizationprogress
+            whenReverseMonetizationProgress(
+              data
+            )
+            return data
           })
         }
 
       })
 
       function whenReverseMonetizationProgress(payment) {
-          // initialize currency and scale on first progress event
-          if (total === 0) {
-            scale = payment.assetScale
-            document.getElementById('currency').innerText = payment.assetCode
-          }
-          total += Number(payment.amount)
-          const formatted = (total * Math.pow(10, -scale)).toFixed(scale)
-          document.getElementById('total').innerText = formatted
+        // initialize currency and scale on first progress event
+        if (total === 0) {
+          scale = payment.assetScale || 8
+          document.getElementById('currency').innerText = payment.assetCode || 'BSV'
         }
+        this.showMonetizationState(payment.returnResult)
+        // amount is the total cumulative amount
+        total = Number(payment.amount)
+        const formatted = (total * Math.pow(10, -scale)).toFixed(scale)
+        document.getElementById('total').innerText = formatted
+      }
+
+    function create_UUID(){
+      var dt = new Date().getTime()
+      var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          var r = (dt + Math.random()*16)%16 | 0
+          dt = Math.floor(dt/16)
+          return (c=='x' ? r :(r&0x3|0x8)).toString(16)
+      })
+      return uuid
+    }
 
     </script>
   </head>
   
   <body>
+    <div>
+      Your bitcoin address: <input id="address" type="text" readonly value=""/>
+    </div>
     <div id="loading">
       Current Monetization State: <span id="state"></span>
     </div>
   
-    <button id="stop-button" disabled>Stop Monetization</button>
-    <button id="start-button" >Start Monetization</button>
+    <button id="stop-button" disabled>Stop Watching</button>
+    <button id="start-button" >Start Watching</button>
 
     <p>
       You have received
@@ -84,10 +131,8 @@
       <span id="currency"></span>
     </p>
 
-
     <div class="column" style="background-color:white;">
       <iframe width="100%" height="100%" src="https://www.youtube.com/embed/7PHTNPs34kU" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>
-       <center> <p align="left">To prepare for the Directorial duties for Lord Timmy, Ted completed the Ron Howard Masterclass and enrolled in a college filmmaking course to shoot this low budget Kurosawa/Tarantino-esque Solo Project, "The Fat Samurai."  This short film was shot in four hours over one day for under $1,000.</p>	</center> 
     </div>
 
 
