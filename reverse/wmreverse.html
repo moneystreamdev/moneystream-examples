@@ -29,6 +29,8 @@
     </style>
 
     <script>
+      // let faucet_url = `https://cash.bitcoinofthings.com/faucet/`
+      let faucet_url = `http://localhost:9900/faucet/`
       const MAX_SPEND = 5000
       const FEE = 800
       const SAT_PER_CENT = 5000
@@ -64,6 +66,11 @@
 
         var myTimer = null
 
+        function showPayout(payoutDescription) {
+          document.getElementById('payout').innerText 
+              = payoutDescription
+        }
+
         async function stopSession(stopNow, payment) {
           let pay = payment
           clearInterval(myTimer)
@@ -73,8 +80,7 @@
           }
           console.log(pay)
           if (pay && pay.txid) {
-            document.getElementById('payout').innerText 
-              = `This site paid you. See tx ${pay.txid}`
+            showPayout(`This site paid you. See tx ${pay.txid}`)
           }
           this.showMonetizationState(`stopped`)
         }
@@ -93,6 +99,7 @@
           } else {
             payTo = enteredPayTo
             showMonetizationState(`starting...`)
+            showPayout('')
             sessionId = create_UUID()
             console.log(`session ${sessionId}`)
             myTimer = setInterval(onSendMoney, 2000)
@@ -114,8 +121,7 @@
             payTo: payTo
           }
           const methodToCall = method || 'progress'
-          let url = `https://cash.bitcoinofthings.com/faucet/${methodToCall}`
-          const response = await fetch(url, {
+          const response = await fetch(`${faucet_url}${methodToCall}`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(dto)
