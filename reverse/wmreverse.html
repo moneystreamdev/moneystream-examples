@@ -1,15 +1,38 @@
 <head>
     <!-- <meta name="monetization" content="1KUrv2Ns8SwNkLgVKrVbSHJmdXLpsEvaDf"> -->
-  
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      
+      /* Create three equal columns that floats next to each other */
+      .column {
+        float: left;
+        width: 33.33%;
+        padding: 10px;
+        height: 300px; /* Should be removed. Only for demonstration */
+      }
+      
+      /* Clear floats after the columns */
+      .row:after {
+        content: "";
+        display: table;
+        clear: both;
+      }
+    </style>
+
     <script>
+      const MAX_SPEND = 5000
+      const FEE = 800
+      const SAT_PER_CENT = 5000
       let sessionId = null
-      let payTo = "133hMAzFDT4R8KRUqoQggv1UvcuyePzRn5"
+      let payTo = "" //"133hMAzFDT4R8KRUqoQggv1UvcuyePzRn5"
       let total = 0
       let sendAmount = 0
       let scale
 
       function showMonetizationState (newState) {
-        console.log(newState)
+        // console.log(newState)
         document.getElementById('state').innerText 
           = newState || document.monetization.state
       }
@@ -34,13 +57,19 @@
 
         var myTimer = null
 
-        async function stopSession() {
+        async function stopSession(stopNow, payment) {
+          let pay = payment
           clearInterval(myTimer)
-          const payment = await onSendMoney('stop')
-          console.log(payment)
-          document.getElementById('payout').innerText 
-          = `You got paid! See tx ${payment?.txid}`
-          // this.showMonetizationState(`You got paid! See tx ${payment?.txid}`)
+          if (!stopNow) {
+            // this does a final spend and may loop
+            pay = await onSendMoney('stop')
+          }
+          console.log(pay)
+          if (pay && pay.txid) {
+            document.getElementById('payout').innerText 
+              = `This site paid you. See tx ${pay.txid}`
+          }
+          this.showMonetizationState(`stopped`)
         }
 
         stopButton.addEventListener('click', async () => {
@@ -50,16 +79,25 @@
         })
 
         function startSession() {
-          showMonetizationState(`starting...`)
-          sessionId = create_UUID()
-          console.log(`session ${sessionId}`)
-          myTimer = setInterval(onSendMoney, 2000)
+          const enteredPayTo = document.getElementById('address').value
+          if (!enteredPayTo) {
+            showMonetizationState(`Enter a paymail first!`)
+            return false
+          } else {
+            payTo = enteredPayTo
+            showMonetizationState(`starting...`)
+            sessionId = create_UUID()
+            console.log(`session ${sessionId}`)
+            myTimer = setInterval(onSendMoney, 2000)
+            return true
+          }
         }
   
         startButton.addEventListener('click', () => {
-          startSession()
-          stopButton.disabled = false
-          startButton.disabled = true
+          if (startSession()){
+            stopButton.disabled = false
+            startButton.disabled = true
+          }
         })
 
         async function onSendMoney(method) {
@@ -70,7 +108,6 @@
           }
           const methodToCall = method || 'progress'
           let url = `https://cash.bitcoinofthings.com/faucet/${methodToCall}`
-          url = `http://localhost:9900/faucet/${methodToCall}`
           const response = await fetch(url, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -83,20 +120,26 @@
           return data
         }
 
-      })
-
-      function whenReverseMonetizationProgress(payment) {
+        function whenReverseMonetizationProgress(payment) {
         // initialize currency and scale on first progress event
         if (total === 0) {
           scale = payment.assetScale || 8
-          document.getElementById('currency').innerText = payment.assetCode || 'BSV'
+          document.getElementById('currency').innerText 
+            = 'cents' //payment.assetCode || 'BSV'
         }
         this.showMonetizationState(payment.returnResult)
         // amount is the total cumulative amount
-        total = Number(payment.amount)
-        const formatted = (total * Math.pow(10, -scale)).toFixed(scale)
-        document.getElementById('total').innerText = formatted
+        total = Math.max(Number(payment.amount)-FEE, 0)
+        // const formatted = (total * Math.pow(10, -scale)).toFixed(scale)
+        const formattedCents = total / SAT_PER_CENT
+        document.getElementById('total').innerText = formattedCents
+        if (payment.amount > MAX_SPEND) {
+          stopSession(true, payment)
+        }
       }
+
+      })
+
 
     function create_UUID(){
       var dt = new Date().getTime()
@@ -113,7 +156,7 @@
   
   <body>
     <div>
-      Your bitcoin address: <input id="address" type="text" readonly value=""/>
+      Your paymail (or bitcoin address): <input id="address" type="text" required value=""/>
     </div>
     <div id="loading">
       Current Monetization State: <span id="state"></span>
@@ -131,9 +174,12 @@
       <button id="stop-button" disabled>Stop Watching</button>
       <button id="start-button" >Start Watching</button>
     </p>
-    <div class="column" style="background-color:white;">
-      <iframe width="100%" height="100%" src="https://www.youtube.com/embed/7PHTNPs34kU" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>
-    </div>
 
+    <div class="row">
+      <div class="column" style="background-color:white;">
+            <iframe src="https://www.imdb.com/videoembed/vi652083481" allowfullscreen width="100%" height="100%"></iframe>
+      </div>
+        
+    </div>
 
   </body>
