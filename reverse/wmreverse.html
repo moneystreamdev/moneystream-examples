@@ -29,13 +29,17 @@
     </style>
 
     <script>
+      const isLocal = false
       let faucet_url = `https://cash.bitcoinofthings.com/faucet/`
-      //let faucet_url = `http://localhost:9900/faucet/`
-      const MAX_SPEND = 5000
+      let payTo = "" //"133hMAzFDT4R8KRUqoQggv1UvcuyePzRn5"
+      if (isLocal) {
+        faucet_url = `http://localhost:9900/faucet/`
+        payTo = "fullcycle@moneybutton.com"
+      }
+      const MAX_SPEND = 5500
       const FEE = 800
       const SAT_PER_CENT = 5000
       let sessionId = null
-      let payTo = "" //"133hMAzFDT4R8KRUqoQggv1UvcuyePzRn5"
       let total = 0
       let sendAmount = 0
       let scale
@@ -71,10 +75,10 @@
               = payoutDescription
         }
 
-        async function stopSession(stopNow, payment) {
+        async function stopSession(stopImmediately, payment) {
           let pay = payment
           clearInterval(myTimer)
-          if (!stopNow) {
+          if (!stopImmediately) {
             // this does a final spend and may loop
             pay = await onSendMoney('stop')
           }
@@ -82,14 +86,19 @@
           if (pay && pay.txid) {
             showPayout(`This site paid you. See tx ${pay.txid}`)
           }
-          this.showMonetizationState(`stopped`)
+          stopUI()
         }
 
         stopButton.addEventListener('click', async () => {
-          await stopSession()
+          await stopSession(false)
+          stopUI()
+        })
+
+        function stopUI() {
+          showMonetizationState(`stopped`)
           stopButton.disabled = true
           startButton.disabled = false
-        })
+        }
 
         function startSession() {
           const enteredPayTo = document.getElementById('address').value
@@ -102,7 +111,7 @@
             showPayout('')
             sessionId = create_UUID()
             console.log(`session ${sessionId}`)
-            myTimer = setInterval(onSendMoney, 2000)
+            myTimer = setInterval(onSendMoney, 3000)
             return true
           }
         }
@@ -128,28 +137,38 @@
           })
           const data = await response.json()
           console.log(data)
-          sendAmount = data.amount
-          whenReverseMonetizationProgress(data)
+          if (data.returnResult && data.returnResult === 'success') {
+            await stopSession(true, data)
+          } else {
+            if (data.returnResult && data.returnResult === 'failure'
+              && data.resultDescription && data.resultDescription === 'error on back end') {
+              await stopSession(true, data)
+            } else {
+              if (data.amount) sendAmount = data.amount
+                await whenReverseMonetizationProgress(data)
+            }
+          }
           return data
         }
 
-        function whenReverseMonetizationProgress(payment) {
-        // initialize currency and scale on first progress event
-        if (total === 0) {
-          scale = payment.assetScale || 8
-          document.getElementById('currency').innerText 
-            = 'cents' //payment.assetCode || 'BSV'
+        async function whenReverseMonetizationProgress(payment) {
+          // initialize currency and scale on first progress event
+          if (total === 0) {
+            scale = payment.assetScale || 8
+            document.getElementById('currency').innerText 
+              = 'cents' //payment.assetCode || 'BSV'
+          }
+          showMonetizationState(payment.returnResult)
+          // amount is the total cumulative amount
+          total = Math.max(Number(payment.amount)-FEE, 0)
+          // const formatted = (total * Math.pow(10, -scale)).toFixed(scale)
+          const formattedCents = total / SAT_PER_CENT
+          document.getElementById('total').innerText = formattedCents
+          if (payment.amount > MAX_SPEND) {
+            //stopSession(true, payment)
+            await onSendMoney('stop')
+          }
         }
-        this.showMonetizationState(payment.returnResult)
-        // amount is the total cumulative amount
-        total = Math.max(Number(payment.amount)-FEE, 0)
-        // const formatted = (total * Math.pow(10, -scale)).toFixed(scale)
-        const formattedCents = total / SAT_PER_CENT
-        document.getElementById('total').innerText = formattedCents
-        if (payment.amount > MAX_SPEND) {
-          stopSession(true, payment)
-        }
-      }
 
       })
 
@@ -172,8 +191,9 @@
       <div class="row mt-3">
         <div class="input-group mb-3">
           <div>
-        Your paymail (or bitcoin address): <input id="address" type="text" required value=""/>
-      </div>
+            Your paymail (or bitcoin address): <input id="address" type="text" required value="fullcycle@moneybutton.com"/>
+          </div>
+        </div>
       <div class="input-group mb-3">
         <div id="loading">
           Current Monetization State: <span id="state"></span>
@@ -184,10 +204,12 @@
         You have received
         <span id="total">nothing (yet)</span>
         <span id="currency"></span>
-      </p>
+        </p>
       </div>
-      <div id="divPayout">
-        <span id="payout"></span>
+      <div class="input-group mb-3">
+        <div id="divPayout">
+          <span id="payout"></span>
+        </div>
       </div>
     
       <p>
