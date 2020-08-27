@@ -13,15 +13,15 @@
       }
       
       /* Create three equal columns that floats next to each other */
-      .column {
+      .colvids {
         float: left;
-        width: 33.33%;
+        width: 50%;
         padding: 10px;
-        height: 300px; /* Should be removed. Only for demonstration */
+        /* height: 300px; */
       }
       
       /* Clear floats after the columns */
-      .row:after {
+      .rowvids:after {
         content: "";
         display: table;
         clear: both;
@@ -30,6 +30,9 @@
       .hide {
         display: none;
       }
+
+      fieldset {margin:0;padding:0;border:solid}
+
     </style>
 
     <script src="utils.js"></script>
@@ -37,46 +40,61 @@
   </head>
   
   <body>
+    <!-- <form> -->
     <div class="container">
       <div class="row mt-3">
-        <div class="input-group mb-3">
-          <div>
-            Your paymail (or bitcoin address): <input id="address" type="text" 
-                required value="fullcycle@moneybutton.com"
-                onblur = "whenEnterPaymail()"
-              />
-          </div>
-        </div>
-      <div class="input-group mb-3">
-        <div id="loading">
-          Current Monetization State: <span id="state"></span>
-        </div>
+        <fieldset class="m-1 p-1">
+          <legend>Step <span style="font-size:16pt">&#9312;</span> enter your paymail address</legend>
+      
+            <div class="input-group mb-3">
+                <div class="column">
+                    Your paymail: <input id="payoutaddress" type="email" 
+                    required value="fullcycle@moneybutton.com"
+                    size="50"
+                  />
+                  <!-- onblur = "whenEnterPaymail()" -->
+                  <button id="submit-paymail" class="btn" >Start Watching</button>
+              </div>
+
+              <div class="input-group mb-3">
+                <div id="loading">
+                  Current Monetization State: <span id="state"></span>
+                </div>
+              </div>
+              <div class="input-group mb-3">
+                <p>
+                You have received
+                <span id="total">nothing (yet)</span>
+                <span id="currency"></span>
+                </p>
+              </div>
+              <div class="input-group mb-3">
+                <div id="divPayout">
+                  <span id="payout"></span>
+                </div>
+              </div>
+        
+        </fieldset>
       </div>
-      <div class="input-group mb-3">
-        <p>
-        You have received
-        <span id="total">nothing (yet)</span>
-        <span id="currency"></span>
-        </p>
-      </div>
-      <div class="input-group mb-3">
-        <div id="divPayout">
-          <span id="payout"></span>
-        </div>
-      </div>
+
     
       <div class="hide">
         <button id="stop-button" class="btn" disabled>Stop Watching</button>
         <button id="start-button" class="btn" >Start Watching</button>
       </div>
 
-      <div class="row">
-        <div class="column" style="background-color:white;">
+      <fieldset class="m-1 p-1">
+        <legend>Step <span style="font-size:16pt">&#9313;</span>. Play the video</legend>
+
+      <div class="rowvids">
+        <div class="colvids" style="background-color:white;">
           <div id="player"></div>
         </div>
       </div>
+      </fieldset>
 
       </div>
+    <!-- </form> -->
     </div>
 
 
@@ -108,13 +126,22 @@
           document.monetization.addEventListener('monetizationpending', showMonetizationState)
           document.monetization.addEventListener('monetizationstart', showMonetizationState)
         }
-  
+
+        var player
+
         function whenEnterPaymail() {
-            console.log(`player`)
-            makePlayer()
+            console.log(`show step 2`)
+            //document.getElementById('step2').className = "colvid"
+            if (player) {
+              done = false
+              console.log(`playing video on exisiting player`)
+              playVideo()
+            } else {
+              console.log(`making player`)
+              makePlayer()
+            }
           }
   
-          var player;
           function makePlayer() {
             // 2. This code loads the IFrame Player API code asynchronously.
             var tag = document.createElement('script');
@@ -140,7 +167,7 @@
   
           // 4. The API will call this function when the video player is ready.
           function onPlayerReady(event) {
-            //event.target.playVideo();
+            event.target.playVideo();
           }
   
           // 5. The API calls this function when the player's state changes.
@@ -150,33 +177,40 @@
           // 2 – paused
           // 3 – buffering
           // 5 – video cued
-          var done = false;
+          // YT.PlayerState.ENDED
+          // YT.PlayerState.PLAYING
+          // YT.PlayerState.PAUSED
+          // YT.PlayerState.BUFFERING
+          // YT.PlayerState.CUED
           function onPlayerStateChange(event) {
-            console.log(event)
+            // console.log(event)
+            if (event.data == YT.PlayerState.PLAYING && done) {
+              stopVideo()
+            }
             if (event.data == YT.PlayerState.PLAYING && !done) {
-              // setTimeout(stopVideo, 6000);
-              // done = true;
               monetizationStart()
             }
-            if (event.data == YT.PlayerState.ENDED && !done) {
-              // setTimeout(stopVideo, 6000);
-              // done = true;
+            if (event.data == YT.PlayerState.ENDED) {
+              monetizationStop()
+            }
+            if (event.data == YT.PlayerState.PAUSED) {
+              // done = true
               monetizationStop()
             }
           }
           // use these to control video playing
           function stopVideo() {
-            player.stopVideo();
+            player.stopVideo()
           }
           function playVideo() {
-            player.playVideo();
+            player.playVideo()
           }
   
   ////////////////////////////////
   
         // window.addEventListener('load', () => {
   
-          document.getElementById('address').value = payTo
+          document.getElementById('payoutaddress').value = payTo
           if (!document.monetization) {
             document.getElementById('state').innerText = 'Not enabled in browser'
           } else {
@@ -185,9 +219,11 @@
     
           const stopButton = document.getElementById('stop-button')
           const startButton = document.getElementById('start-button')
+          const btnSubmitPaymail = document.getElementById('submit-paymail')
           const monetizationTag = document.querySelector('meta[name="monetization"]')
   
-          var myTimer = null
+          let myTimer = null
+          let done = false
   
           function showPayout(payoutDescription) {
             document.getElementById('payout').innerText 
@@ -196,17 +232,26 @@
   
           async function stopSession(stopImmediately, payment) {
             let pay = payment
+            console.log(myTimer)
             clearInterval(myTimer)
             if (!stopImmediately) {
               // this does a final spend and may loop
               pay = await onSendMoney('stop')
             }
             console.log(pay)
-            if (pay && pay.txid) {
-              showPayout(`This site paid you. See tx ${pay.txid}`)
+            if (pay && pay.returnResult && pay.returnResult === 'failure') {
+              showPayout(`Sorry! Payment failed. ${pay.resultDescription}`)
+            } else {
+              if (pay && pay.txid) {
+                showPayout(`This site paid you. See tx ${pay.txid}`)
+              }
             }
             stopUI()
           }
+
+          btnSubmitPaymail.addEventListener('click', async () => {
+            await whenEnterPaymail()            
+          })
   
           stopButton.addEventListener('click', async () => {
             await monetizationStop()
@@ -225,13 +270,14 @@
           }
   
           function startSession() {
-            const enteredPayTo = document.getElementById('address').value
+            const enteredPayTo = document.getElementById('payoutaddress').value
             if (!enteredPayTo) {
               showMonetizationState(`Enter a paymail first!`)
               return false
             } else {
               payTo = enteredPayTo
               showMonetizationState(`starting...`)
+              showTotal('nothing yet')
               showPayout('')
               sessionId = create_UUID()
               console.log(`session ${sessionId}`)
@@ -253,31 +299,49 @@
           }
   
           async function onSendMoney(method) {
+            if (done) {
+              console.log(`done`)
+              return
+            }
             // authorize faucet to send money to user
             const dto = {
               session: sessionId,
               payTo: payTo
             }
             const methodToCall = method || 'progress'
-            const response = await fetch(`${faucet_url}${methodToCall}`, {
-              method: 'POST',
-              headers: {'Content-Type': 'application/json'},
-              body: JSON.stringify(dto)
-            })
-            const data = await response.json()
-            console.log(data)
-            if (data.returnResult && data.returnResult === 'success') {
-              await stopSession(true, data)
-            } else {
-              if (data.returnResult && data.returnResult === 'failure'
-                && data.resultDescription && data.resultDescription === 'error on back end') {
+            try {
+              const response = await fetch(`${faucet_url}${methodToCall}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(dto)
+              })
+              const data = await response.json()
+              console.log(data)
+              if (data.statusCode && data.statusCode === 500) {
+                done = true
+                await stopSession(true, data)
+              }
+              if (data.returnResult && data.returnResult === 'success') {
                 await stopSession(true, data)
               } else {
-                if (data.amount) sendAmount = data.amount
-                  await whenReverseMonetizationProgress(data)
+                if (data.returnResult && data.returnResult === 'failure' && data.resultDescription 
+                && (data.resultDescription === 'error on back end' || data.resultDescription === 'ERROR: Missing inputs')) {
+                  await stopSession(true, data)
+                } else {
+                  if (data.amount) sendAmount = data.amount
+                    await whenReverseMonetizationProgress(data)
+                }
               }
+              return data
             }
-            return data
+            catch (err) {
+              console.error(err)
+              await stopSession(true)
+            }
+          }
+
+          function showTotal(formattedCents) {
+            document.getElementById('total').innerText = formattedCents
           }
   
           async function whenReverseMonetizationProgress(payment) {
@@ -292,9 +356,8 @@
             total = Math.max(Number(payment.amount)-FEE, 0)
             // const formatted = (total * Math.pow(10, -scale)).toFixed(scale)
             const formattedCents = total / SAT_PER_CENT
-            document.getElementById('total').innerText = formattedCents
+            showTotal(formattedCents)
             if (payment.amount > MAX_SPEND) {
-              //stopSession(true, payment)
               await onSendMoney('stop')
             }
           }
