@@ -54,9 +54,9 @@
         let payTo = ""
 
         // localhost development
-        const extensionId = 'dnokejphlpljkikgfgmaiojlohadfdgo'
+        // const extensionId = 'dnokejphlpljkikgfgmaiojlohadfdgo'
         // extension id in chrome store
-        // const extensionId = 'ggdmhmaklbcaeeolnppfehjkkihhnkfe'
+        const extensionId = 'ggdmhmaklbcaeeolnppfehjkkihhnkfe'
 
         chrome.runtime.sendMessage(
           extensionId,
@@ -96,45 +96,52 @@
         <button id="start-button" class="btn" >Start Watching</button>
       </div>
 
+        </div>
       </div>
 
-      <div class="card m-1 p-1 vidcontainer">
-        <legend>Step <span style="font-size:16pt">&#9313;</span>. Play the video</legend>
+      <div class="row mt-1">
+        <!-- <div class="card m-1 p-1">
+          <div class="row"> -->
+            <div class="col-sm-6" id="loading">
+              <div id="monetizationIcon">
+                <i id="monicon"
+                  class="fa fa-stop-circle" 
+                  style="font-size:36px; color:red"
+                ></i>
+              </div>
+              <span id="state"></span>
+            </div>
+            <div class="col-sm-6 mb-3">
+              <span id="total">nothing yet</span>
+              <span id="currency"></span>
+            </div>
+          <!-- </div>
+        </div> -->
+      </div>
 
-      <div class="card-body rowvids">
-
-        <div class="row">
-        <div class="col-sm" id="loading">
-          <div id="monetizationIcon">
-            <i id="monicon"
-              class="fa fa-stop-circle" 
-              style="font-size:36px; color:red"
-            ></i>
+      <div class="row mt-1">
+        <div id="cardpayout" class="card hide">
+          <div id="divPayout" class="mb-1">
+            <span id="payout"></span>
           </div>
-          <span id="state"></span>
-        </div>
-        <div class="col-sm mb-3">
-          <p>
-          <span id="total">nothing yet</span>
-          <span id="currency"></span>
-          </p>
-        </div>
-        </div>
-
-        <div id="divPayout" class="mb-3">
-          <span id="payout"></span>
-        </div>
-
-        <div class="colvids" style="background-color:white;">
-          <div id="player" 
-            data-plyr-provider="youtube" 
-            data-plyr-embed-id="4Wf00i7EKho"
-          ></div>
         </div>
       </div>
 
-      </div>
+      <div class="row mt-1">
+        <div class="card m-1 p-1 vidcontainer">
+          <legend>Step <span style="font-size:16pt">&#9313;</span>. Play the video</legend>
 
+        <div class="card-body rowvids">
+          <div class="colvids" style="background-color:white;">
+            <div id="player" 
+              data-plyr-provider="youtube" 
+              data-plyr-embed-id="4Wf00i7EKho"
+            ></div>
+          </div>
+        </div>
+
+        </div>
+      </div>
     </div>
 
     <script>
@@ -185,14 +192,14 @@
           if (icon) {
             if (monetizationState != null
               && monetizationState != newState) {
-                var monIcon = document.querySelector("#monicon")
+                const monIcon = document.querySelector("#monicon")
                 monIcon.className = `fa fa-${icon}`
                 monIcon.style.color = `${color}`
             }
             monetizationState = newState
           }
           if (!icon || icon == 'question') {
-            document.getElementById('state').innerText 
+            document.getElementById('state').textContent 
               = newState || document.monetization.state
           }
         }
@@ -283,7 +290,7 @@
   
           document.getElementById('payoutaddress').value = payTo
           if (!document.monetization) {
-            document.getElementById('state').innerText = 'Not enabled in browser'
+            document.getElementById('state').textContent = 'Not enabled in browser'
           } else {
             showMonetizationState('stopped')
           }
@@ -293,17 +300,22 @@
           const btnSubmitPaymail = document.getElementById('submit-paymail')
           const monetizationTag = document.querySelector('meta[name="monetization"]')
   
-          let myTimer = null
+          let monTimer = null
           let done = false
   
           function showPayout(payoutDescription) {
-            document.getElementById('payout').innerText 
+            if (!payoutDescription) {
+              document.getElementById('cardpayout').className="card hide"
+            } else {
+              document.getElementById('cardpayout').className="card"
+            }
+            document.getElementById('payout').textContent
                 = payoutDescription
           }
           
           function stopTimer() {
-            clearInterval(myTimer)
-            myTimer = null
+            clearInterval(monTimer)
+            monTimer = null
           }
 
           async function stopSession(stopImmediately, payment) {
@@ -361,8 +373,8 @@
               showPayout('')
               sessionId = create_UUID()
               console.log(`session ${sessionId}`)
-              if (myTimer === null) {
-                myTimer = setInterval(onSendMoney, 3000)
+              if (monTimer === null) {
+                monTimer = setInterval(onSendMoney, 3000)
               }
               playVideo()
               return true
@@ -414,7 +426,7 @@
                   await stopSession(true, data)
                 } else {
                   if (data.amount) sendAmount = data.amount
-                    await whenReverseMonetizationProgress(data)
+                  await whenReverseMonetizationProgress(data)
                 }
               }
               return data
@@ -426,15 +438,15 @@
           }
 
           function showTotal(formattedCents) {
-            document.getElementById('total').innerText = formattedCents
+            document.getElementById('total').textContent = formattedCents
           }
   
           async function whenReverseMonetizationProgress(payment) {
             // initialize currency and scale on first progress event
             if (payment && payment.amount && total === 0) {
               scale = payment.assetScale || 8
-              document.getElementById('currency').innerText 
-                = 'cents' //payment.assetCode || 'BSV'
+              document.getElementById('currency').textContent 
+                 = 'cents' //payment.assetCode || 'BSV'
             }
             showMonetizationState(payment.returnResult)
             // amount is the total cumulative amount
@@ -453,6 +465,6 @@
   
         // })
       
-      </script>
+    </script>
   
   </body>
