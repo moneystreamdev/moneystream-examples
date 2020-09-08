@@ -2,22 +2,31 @@
     <!-- <meta name="monetization" content="1KUrv2Ns8SwNkLgVKrVbSHJmdXLpsEvaDf"> -->
     <title>MoneyStream reverse metering example</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.6.2/plyr.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <script src="https://cdn.plyr.io/3.6.2/plyr.polyfilled.js"></script>
 
-    <style>
+  <style>
       * {
         box-sizing: border-box;
       }
       
-      /* Create three equal columns that floats next to each other */
       .colvids {
-        float: left;
+        /* float: left;
         width: 50%;
-        padding: 10px;
+        padding: 10px; */
         /* height: 300px; */
+        margin: 20px auto;
+      }
+
+      .plyr {
+        border-radius: 10px;
+        max-width: 500px;
+        max-height: 350px;
       }
       
       /* Clear floats after the columns */
@@ -25,6 +34,10 @@
         content: "";
         display: table;
         clear: both;
+        /* width: 500px; */
+      }
+      .vidcontainer {
+        width:650px;
       }
 
       .hide {
@@ -37,72 +50,98 @@
 
     <script src="utils.js"></script>
 
+    <script>
+        let payTo = "" //"133hMAzFDT4R8KRUqoQggv1UvcuyePzRn5"
+
+        // extension id in chrome store
+        // ggdmhmaklbcaeeolnppfehjkkihhnkfe
+        // localhost development
+        // const extensionId = 'dnokejphlpljkikgfgmaiojlohadfdgo'
+        const extensionId = 'ggdmhmaklbcaeeolnppfehjkkihhnkfe'
+
+        chrome.runtime.sendMessage(
+          extensionId,
+          {command: "info"}, 
+          response => {
+              console.log(response)
+              if (response && response.address) {
+                payTo = response.address
+                document.getElementById('payoutaddress').value = payTo
+              }
+        })
+
+    </script>
+
   </head>
   
   <body>
-    <!-- <form> -->
     <div class="container">
+
       <div class="row mt-3">
-        <fieldset class="m-1 p-1">
+        <div class="card m-1 p-1">
           <legend>Step <span style="font-size:16pt">&#9312;</span> enter your paymail address</legend>
       
-            <div class="input-group mb-3">
+            <div class="card-body mb-3">
                 <div class="column">
                     Your paymail: <input id="payoutaddress" type="email" 
-                    required value="fullcycle@moneybutton.com"
-                    size="50"
+                    required value=""
+                    size="45"
                   />
                   <!-- onblur = "whenEnterPaymail()" -->
                   <button id="submit-paymail" class="btn" >Start Watching</button>
               </div>
-
-              <div class="input-group mb-3">
-                <div id="loading">
-                  Current Monetization State: <span id="state"></span>
-                </div>
-              </div>
-              <div class="input-group mb-3">
-                <p>
-                You have received
-                <span id="total">nothing (yet)</span>
-                <span id="currency"></span>
-                </p>
-              </div>
-              <div class="input-group mb-3">
-                <div id="divPayout">
-                  <span id="payout"></span>
-                </div>
-              </div>
-        
-        </fieldset>
       </div>
 
-    
       <div class="hide">
         <button id="stop-button" class="btn" disabled>Stop Watching</button>
         <button id="start-button" class="btn" >Start Watching</button>
       </div>
 
-      <fieldset class="m-1 p-1">
+      </div>
+
+      <div class="card m-1 p-1 vidcontainer">
         <legend>Step <span style="font-size:16pt">&#9313;</span>. Play the video</legend>
 
-      <div class="rowvids">
+      <div class="card-body rowvids">
+
+        <div class="row">
+        <div class="col-sm" id="loading">
+          <div id="monetizationIcon">
+            <i id="monicon"
+              class="fa fa-stop-circle" 
+              style="font-size:36px; color:red"
+            ></i>
+          </div>
+          <span id="state"></span>
+        </div>
+        <div class="col-sm mb-3">
+          <p>
+          <span id="total">nothing yet</span>
+          <span id="currency"></span>
+          </p>
+        </div>
+        </div>
+
+        <div id="divPayout" class="mb-3">
+          <span id="payout"></span>
+        </div>
+
         <div class="colvids" style="background-color:white;">
-          <div id="player"></div>
+          <div id="player" 
+            data-plyr-provider="youtube" 
+            data-plyr-embed-id="4Wf00i7EKho"
+          ></div>
         </div>
       </div>
-      </fieldset>
 
       </div>
-    <!-- </form> -->
+
     </div>
 
-
-      <script>
+    <script>
 
         const isLocal = false
         let faucet_url = `https://cash.bitcoinofthings.com/faucet/`
-        let payTo = "" //"133hMAzFDT4R8KRUqoQggv1UvcuyePzRn5"
         if (isLocal) {
           faucet_url = `http://localhost:9900/faucet/`
           payTo = "fullcycle@moneybutton.com"
@@ -114,11 +153,49 @@
         let total = 0
         let sendAmount = 0
         let scale
+        let monetizationState = null
   
         function showMonetizationState (newState) {
-          // console.log(newState)
-          document.getElementById('state').innerText 
-            = newState || document.monetization.state
+          console.log(newState)
+          let icon = 'question'
+          let color = 'grey'
+          if (newState == "stopped") {
+            icon = "stop-circle"
+            color = 'grey'
+          }
+          if (newState === "starting") {
+            icon = "play-circle"
+            color = "grey"
+          }
+          if (newState === "pending") {
+            icon = "play-circle"
+            color = "green"
+          }
+          if (newState === "monetizing") {
+            icon = "usd"
+            color = "green"
+          }
+          if (newState === "failure") {
+            icon = "times-circle"
+            color = "red"
+          }
+          if (newState == "success") {
+            icon = "thumbs-up"
+            color = "green"
+          }
+          if (icon) {
+            if (monetizationState != null
+              && monetizationState != newState) {
+                var monIcon = document.querySelector("#monicon")
+                monIcon.className = `fa fa-${icon}`
+                monIcon.style.color = `${color}`
+            }
+            monetizationState = newState
+          }
+          if (!icon || icon == 'question') {
+            document.getElementById('state').innerText 
+              = newState || document.monetization.state
+          }
         }
     
         if (document.monetization) {
@@ -130,8 +207,17 @@
         var player
 
         function whenEnterPaymail() {
+            const enteredPayTo = document.getElementById('payoutaddress').value
+            if (!enteredPayTo) {
+              showMonetizationState(`failure`)
+              showPayout(`Enter a paymail first!`)
+              return false
+            } else {
+              showMonetizationState('starting')
+              showPayout(``)
+            }
+
             console.log(`show step 2`)
-            //document.getElementById('step2').className = "colvid"
             if (player) {
               done = false
               console.log(`playing video on exisiting player`)
@@ -144,33 +230,19 @@
   
           function makePlayer() {
             // 2. This code loads the IFrame Player API code asynchronously.
-            var tag = document.createElement('script');
-  
-            tag.src = "https://www.youtube.com/iframe_api";
-            var firstScriptTag = document.getElementsByTagName('script')[0];
-            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+            // var tag = document.createElement('script');
+            // tag.src = "https://www.youtube.com/iframe_api";
+            // var firstScriptTag = document.getElementsByTagName('script')[0];
+            // firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+            player = new Plyr('#player', {
+              autoplay:true,
+              ratio:'16:9',
+              youtube: {noCookie:true},
+//              clickToPlay: false
+            })
+            player.on('statechange', onPlayerStateChange)
           }
   
-          // 3. This function creates an <iframe> (and YouTube player)
-          //    after the API code downloads.
-          function onYouTubeIframeAPIReady() {
-            player = new YT.Player('player', {
-              height: '240',
-              width: '426',
-              videoId: '4Wf00i7EKho',
-              events: {
-                'onReady': onPlayerReady,
-                'onStateChange': onPlayerStateChange
-              }
-            });
-          }
-  
-          // 4. The API will call this function when the video player is ready.
-          function onPlayerReady(event) {
-            event.target.playVideo();
-          }
-  
-          // 5. The API calls this function when the player's state changes.
           // -1 – unstarted
           // 0 – ended
           // 1 – playing
@@ -183,27 +255,27 @@
           // YT.PlayerState.BUFFERING
           // YT.PlayerState.CUED
           function onPlayerStateChange(event) {
-            // console.log(event)
-            if (event.data == YT.PlayerState.PLAYING && done) {
+            if (event.detail.code == YT.PlayerState.PLAYING && done) {
               stopVideo()
             }
-            if (event.data == YT.PlayerState.PLAYING && !done) {
+            if (event.detail.code == YT.PlayerState.PLAYING && !done) {
               monetizationStart()
             }
-            if (event.data == YT.PlayerState.ENDED) {
+            if (event.detail.code == YT.PlayerState.ENDED) {
               monetizationStop()
             }
-            if (event.data == YT.PlayerState.PAUSED) {
-              // done = true
+            if (event.detail.code == YT.PlayerState.PAUSED) {
               monetizationStop()
             }
           }
           // use these to control video playing
           function stopVideo() {
-            player.stopVideo()
+            player.stop()
+            console.log('player stop')
           }
           function playVideo() {
-            player.playVideo()
+            player.play()
+            console.log('player play')
           }
   
   ////////////////////////////////
@@ -214,7 +286,7 @@
           if (!document.monetization) {
             document.getElementById('state').innerText = 'Not enabled in browser'
           } else {
-            showMonetizationState()
+            showMonetizationState('stopped')
           }
     
           const stopButton = document.getElementById('stop-button')
@@ -229,24 +301,33 @@
             document.getElementById('payout').innerText 
                 = payoutDescription
           }
-  
+          
+          function stopTimer() {
+            clearInterval(myTimer)
+            myTimer = null
+          }
+
           async function stopSession(stopImmediately, payment) {
             let pay = payment
-            console.log(myTimer)
-            clearInterval(myTimer)
-            if (!stopImmediately) {
+            stopTimer()
+            if (stopImmediately === false) {
               // this does a final spend and may loop
               pay = await onSendMoney('stop')
             }
             console.log(pay)
             if (pay && pay.returnResult && pay.returnResult === 'failure') {
               showPayout(`Sorry! Payment failed. ${pay.resultDescription}`)
-            } else {
-              if (pay && pay.txid) {
-                showPayout(`This site paid you. See tx ${pay.txid}`)
-              }
+              stopUI('failure')
+              return 'failure'
+            } else if (pay && pay.txid) {
+                showPayout(`You got paid! See tx ${pay.txid}`)
+                stopUI('success')
+                return 'success'
             }
-            stopUI()
+            if (!pay) {
+              stopVideo()
+            }
+            return null
           }
 
           btnSubmitPaymail.addEventListener('click', async () => {
@@ -258,13 +339,13 @@
           })
   
           async function monetizationStop() {
-            await stopSession(false)
-            stopUI()
+            const result = await stopSession(false)
+            stopUI(result)
           }
   
-          function stopUI() {
-            showMonetizationState(`stopped`)
+          function stopUI(reason) {
             stopVideo()
+            showMonetizationState(reason)
             stopButton.disabled = true
             startButton.disabled = false
           }
@@ -276,12 +357,14 @@
               return false
             } else {
               payTo = enteredPayTo
-              showMonetizationState(`starting...`)
+              showMonetizationState(`starting`)
               showTotal('nothing yet')
               showPayout('')
               sessionId = create_UUID()
               console.log(`session ${sessionId}`)
-              myTimer = setInterval(onSendMoney, 3000)
+              if (myTimer === null) {
+                myTimer = setInterval(onSendMoney, 3000)
+              }
               playVideo()
               return true
             }
@@ -292,7 +375,7 @@
           })
   
           function monetizationStart() {
-            if (startSession()){
+            if (startSession()) {
               stopButton.disabled = false
               startButton.disabled = true
             }
@@ -301,6 +384,7 @@
           async function onSendMoney(method) {
             if (done) {
               console.log(`done`)
+              stopTimer()
               return
             }
             // authorize faucet to send money to user
@@ -319,6 +403,8 @@
               console.log(data)
               if (data.statusCode && data.statusCode === 500) {
                 done = true
+                stopTimer()
+                stopVideo()
                 await stopSession(true, data)
               }
               if (data.returnResult && data.returnResult === 'success') {
@@ -346,7 +432,7 @@
   
           async function whenReverseMonetizationProgress(payment) {
             // initialize currency and scale on first progress event
-            if (total === 0) {
+            if (payment && payment.amount && total === 0) {
               scale = payment.assetScale || 8
               document.getElementById('currency').innerText 
                 = 'cents' //payment.assetCode || 'BSV'
@@ -355,8 +441,12 @@
             // amount is the total cumulative amount
             total = Math.max(Number(payment.amount)-FEE, 0)
             // const formatted = (total * Math.pow(10, -scale)).toFixed(scale)
-            const formattedCents = total / SAT_PER_CENT
-            showTotal(formattedCents)
+            if (isNaN(total)) {
+              showTotal('nothing yet')
+            } else {
+              const formattedCents = total / SAT_PER_CENT
+              showTotal(formattedCents)
+            }
             if (payment.amount > MAX_SPEND) {
               await onSendMoney('stop')
             }
