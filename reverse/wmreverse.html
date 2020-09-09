@@ -332,6 +332,7 @@
             document.getElementById('payout').textContent
                 = payoutDescription
             if (payment) {
+              document.getElementById('receiptLink').className=""
               document.getElementById('receiptLink').href
               = `https://whatsonchain.com/tx/${payment.txid}`
             } else {
