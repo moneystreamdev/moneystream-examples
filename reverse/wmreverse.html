@@ -3,7 +3,7 @@
     <title>MoneyStream reverse metering example</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.6.2/plyr.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
@@ -21,14 +21,16 @@
         padding: 10px; */
         /* height: 300px; */
         margin: 20px auto;
+        max-width: 400px;
       }
 
       .plyr {
         border-radius: 10px;
-        max-width: 500px;
-        max-height: 350px;
       }
       
+      .rowvids {
+        padding: 1px;
+      }
       /* Clear floats after the columns */
       .rowvids:after {
         content: "";
@@ -95,7 +97,6 @@
                     required value=""
                     size="45"
                   />
-                  <!-- onblur = "whenEnterPaymail()" -->
                   <button id="submit-paymail" class="btn" >Start Watching</button>
               </div>
       </div>
@@ -109,7 +110,7 @@
       </div>
 
       <div class="row mt-1">
-        <div class="col-sm-6" id="loading">
+        <div class="col-sm-4" id="loading">
           <div id="monetizationIcon">
             <i id="monicon"
               class="fa fa-stop-circle" 
@@ -119,16 +120,23 @@
           </div>
           <span id="state"></span>
         </div>
-        <div class="col-sm-6 mb-3">
+        <div class="col-sm-4 mb-3">
           <span id="total" class="moneycounter">nothing yet</span>
           <span id="currency" class="moneycounter"></span>
         </div>
+        <div class="col-sm-4 mb-3"></div>
       </div>
 
       <div class="row mt-1">
-        <div id="cardpayout" class="card hide">
+        <div id="cardpayout" class="card border-0 hide">
           <div id="divPayout" class="mb-1">
             <span id="payout"></span>
+            <a id="receiptLink" href="https://whatsonchain.com/tx/txid" target="_blank"> 
+              <i 
+                class="fa fa-receipt"
+                style="font-size:20px; color:green"
+              ></i>
+            </a>
           </div>
         </div>
       </div>
@@ -184,7 +192,7 @@
             color = "green"
           }
           if (newState === "monetizing") {
-            icon = "usd"
+            icon = "dollar-sign"
             color = "green"
           }
           if (newState === "failure") {
@@ -217,7 +225,7 @@
           document.monetization.addEventListener('monetizationstart', showMonetizationState)
         }
 
-        var player
+        let player
 
         function whenEnterPaymail() {
             const enteredPayTo = document.getElementById('payoutaddress').value
@@ -254,6 +262,7 @@
 //              clickToPlay: false
             })
             player.on('statechange', onPlayerStateChange)
+            player.poster = 'https://images.unsplash.com/photo-1533069027836-fa937181a8ce?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1350&q=80'
           }
   
           // -1 – unstarted
@@ -310,14 +319,18 @@
           let monTimer = null
           let done = false
   
-          function showPayout(payoutDescription) {
+          function showPayout(payoutDescription, payment) {
             if (!payoutDescription) {
-              document.getElementById('cardpayout').className="card hide"
+              document.getElementById('cardpayout').className="card border-0 hide"
             } else {
-              document.getElementById('cardpayout').className="card"
+              document.getElementById('cardpayout').className="card border-0"
             }
             document.getElementById('payout').textContent
                 = payoutDescription
+            if (payment) {
+              document.getElementById('receiptLink').href
+              = `https://whatsonchain.com/tx/${payment.txid}`
+            }
           }
           
           function stopTimer() {
@@ -338,7 +351,7 @@
               stopUI('failure')
               return 'failure'
             } else if (pay && pay.txid) {
-                showPayout(`You got paid! See tx ${pay.txid}`)
+                showPayout(`You got paid!`, pay)
                 stopUI('success')
                 return 'success'
             }
@@ -471,7 +484,7 @@
           }
   
         // })
-      
+
     </script>
   
   </body>
