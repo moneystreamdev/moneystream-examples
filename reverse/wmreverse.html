@@ -334,6 +334,8 @@
             if (payment) {
               document.getElementById('receiptLink').href
               = `https://whatsonchain.com/tx/${payment.txid}`
+            } else {
+              document.getElementById('receiptLink').className="hide"
             }
           }
           
@@ -446,8 +448,9 @@
               if (data.returnResult && data.returnResult === 'success') {
                 await stopSession(true, data)
               } else {
-                if (data.returnResult && data.returnResult === 'failure' && data.resultDescription 
-                && (data.resultDescription === 'error on back end' || data.resultDescription === 'ERROR: Missing inputs')) {
+                if (data.returnResult && data.returnResult === 'failure') {
+                // && data.resultDescription 
+                //&& (data.resultDescription === 'error on back end' || data.resultDescription === 'ERROR: Missing inputs')) {
                   await stopSession(true, data)
                 } else {
                   if (data.amount) sendAmount = data.amount
