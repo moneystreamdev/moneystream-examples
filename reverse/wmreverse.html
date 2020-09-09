@@ -46,6 +46,8 @@
 
       fieldset {margin:0;padding:0;border:solid}
 
+      .moneycounter {font-size: 16pt;}
+
     </style>
 
     <script src="utils.js"></script>
@@ -78,11 +80,18 @@
 
       <div class="row mt-3">
         <div class="card m-1 p-1">
-          <legend>Step <span style="font-size:16pt">&#9312;</span> enter your paymail address</legend>
+          <legend>Step 
+            <span style="font-size:16pt">&#9312;</span> 
+            enter your paymail address
+            <a href="https://blog.moneybutton.com/2019/05/31/introducing-paymail-an-extensible-identity-protocol-for-bitcoin-bsv/" target="_blank"> 
+              <i class="fa fa-question-circle"></i>
+            </a>
+          </legend>
       
             <div class="card-body mb-3">
                 <div class="column">
-                    Your paymail: <input id="payoutaddress" type="email" 
+                    <input id="payoutaddress" type="email" 
+                    placeholder="your paymail or BSV address"
                     required value=""
                     size="45"
                   />
@@ -100,23 +109,20 @@
       </div>
 
       <div class="row mt-1">
-        <!-- <div class="card m-1 p-1">
-          <div class="row"> -->
-            <div class="col-sm-6" id="loading">
-              <div id="monetizationIcon">
-                <i id="monicon"
-                  class="fa fa-stop-circle" 
-                  style="font-size:36px; color:red"
-                ></i>
-              </div>
-              <span id="state"></span>
-            </div>
-            <div class="col-sm-6 mb-3">
-              <span id="total">nothing yet</span>
-              <span id="currency"></span>
-            </div>
-          <!-- </div>
-        </div> -->
+        <div class="col-sm-6" id="loading">
+          <div id="monetizationIcon">
+            <i id="monicon"
+              class="fa fa-stop-circle" 
+              style="font-size:36px; color:red"
+              title="stopped"
+            ></i>
+          </div>
+          <span id="state"></span>
+        </div>
+        <div class="col-sm-6 mb-3">
+          <span id="total" class="moneycounter">nothing yet</span>
+          <span id="currency" class="moneycounter"></span>
+        </div>
       </div>
 
       <div class="row mt-1">
@@ -195,6 +201,7 @@
                 const monIcon = document.querySelector("#monicon")
                 monIcon.className = `fa fa-${icon}`
                 monIcon.style.color = `${color}`
+                monIcon.title=`${newState}`
             }
             monetizationState = newState
           }
