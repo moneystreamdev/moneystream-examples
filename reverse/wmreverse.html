@@ -217,6 +217,9 @@
             document.getElementById('state').textContent 
               = newState || document.monetization.state
           }
+          else {
+            document.getElementById('state').textContent =''
+          }
         }
     
         if (document.monetization) {
