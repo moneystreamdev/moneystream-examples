@@ -50,8 +50,13 @@
           extensionId,
           {command: "info"}, 
           response => {
+            if (!chrome.runtime.lastError) {
               console.log(response)
               document.getElementById('extension').innerText = JSON.stringify(response)
+            } else {
+              console.error(`Extension not installed`)
+              document.getElementById('extension').innerText = `MoneyStream extension is not installed`
+            }
         })
 
         // automatically stop monetization

@@ -58,20 +58,39 @@
         let payTo = ""
 
         // localhost development
-        // const extensionId = 'dnokejphlpljkikgfgmaiojlohadfdgo'
+        const extensionId_LocalTesting = 'dnokejphlpljkikgfgmaiojlohadfdgo'
         // extension id in chrome store
-        const extensionId = 'ggdmhmaklbcaeeolnppfehjkkihhnkfe'
+        const extensionId_InStore = 'ggdmhmaklbcaeeolnppfehjkkihhnkfe'
 
         chrome.runtime.sendMessage(
-          extensionId,
+          extensionId_InStore,
           {command: "info"}, 
           response => {
+            if (!chrome.runtime.lastError) {
               console.log(response)
               if (response && response.address) {
                 payTo = response.address
                 document.getElementById('payoutaddress').value = payTo
               }
+            } else {
+
+              chrome.runtime.sendMessage(
+              extensionId_LocalTesting,
+              {command: "info"}, 
+              response => {
+                if (!chrome.runtime.lastError) {
+                  console.log(response)
+                  if (response && response.address) {
+                    payTo = response.address
+                    document.getElementById('payoutaddress').value = payTo
+                  }
+                } else {
+                }
+              })
+
+            }
         })
+
 
     </script>
 
