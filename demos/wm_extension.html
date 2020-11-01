@@ -1,0 +1,103 @@
+<html>
+    <head>
+        <script src="utils.js"></script>
+        <script>
+
+            let timer = null
+            const timerStartInfo = () => {
+                timer = setInterval(onInfo, 9000)
+            }
+            const timerStopInfo = () => {
+                clearInterval(timer)
+            }
+
+            window.addEventListener("message", (event) => {
+                if (event.data && event.data === "") {
+                    return
+                }
+            //console.log(`Message ${event.data.direction}`,event)
+            if (event.source == window &&
+                event.data.direction &&
+                event.data.direction == "extension-to-browser") {
+                // for testing
+                logMessage(event.data.message)
+            }
+            if (event.data.command == "info") {
+                xtn = event.data.message
+                console.log(xtn)
+                whenExtensionDetected(xtn)
+            } else {
+                if (event.data && event.data != "") {
+                    if (event.data.direction == "browser-to-extension") {
+                        logMessage(event.data.message)
+                    } else {
+                        //logMessage(event.data)
+                    }
+                }
+            }
+            if (event.data.type == "monetizationstart") {
+                logMessage(event.data)
+            }
+            if (event.data.type == "monetizationprogress") {
+                logMessage(event.data)
+            }
+            if (event.data.type == "monetizationstop") {
+                logMessage(event.data)
+            }
+            })
+
+            const logMessage = (msg) => {
+                console.log(msg)
+                const el = document.getElementById('messages')
+                el.textContent += `${JSON.stringify(msg)}\n`
+            }
+
+            const onInfo = () => {
+                console.log(`Info`)
+                checkExtension()
+            }
+            const onStart = () => {
+                console.log(`Start`)
+                startMonetization(window.location.href,'fullcycle@moneybutton.com')
+            }
+            const onStop = () => {
+                console.log(`Stop`)
+                stopMonetization()
+            }
+
+            const whenExtensionDetected = (xtn) => {
+                const txtExtensionName = document.getElementById('txtExtensionName')
+                txtExtensionName.textContent = `${xtn.name}`
+                // ${xtn.version} Balance:${xtn.balanceSatoshis}`
+                const txtExtensionVersion = document.getElementById('txtExtensionVersion')
+                txtExtensionVersion.textContent = `${xtn.version}`
+                const txtExtensionBalance = document.getElementById('txtExtensionBalance')
+                txtExtensionBalance.textContent = `${xtn.balanceSatoshis}`
+            }
+
+            onInfo()
+        </script>
+    </head>
+    <body>
+        <div>
+            <span id="txtExtensionName">Placeholder</span>
+            <span id="txtExtensionVersion">0.0.0</span>
+            <span id="txtExtensionStatus"></span>
+            <span id="txtExtensionBalance">$0</span>
+        </div>
+        <!-- <div>
+            <button onclick="timerStartInfo()">Start Info Timer</button>
+            <button onclick="timerStopInfo()">Stop Info Timer</button>
+        </div> -->
+        <div>
+            <button onclick="onInfo()">Extension Info</button>
+        </div>
+        <div>
+            <button onclick="onStart()">Monetization Start/Play</button>
+        </div>
+        <div>
+            <button onclick="onStop()">Monetization Stop/Pause</button>
+        </div>
+        <pre id='messages'></pre>
+    </body>
+</html>
