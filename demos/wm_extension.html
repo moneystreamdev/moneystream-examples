@@ -1,15 +1,32 @@
 <html>
     <head>
+        <link rel="stylesheet" href="../component/moneystream.css" type="text/css" charset="utf-8" />
+        <style type="text/css">
+            .btn {
+                padding: 8px;
+            }
+            #messages {
+                padding: 8px;
+                background-color: blanchedalmond;
+            }
+            .hide {
+                display:none
+            }
+        </style>
+
         <script src="utils.js"></script>
         <script>
 
-            let timer = null
-            const timerStartInfo = () => {
-                timer = setInterval(onInfo, 9000)
-            }
-            const timerStopInfo = () => {
-                clearInterval(timer)
-            }
+            // let timer = null
+            // const timerStartInfo = () => {
+            //     timer = setInterval(onInfo, 9000)
+            // }
+            // const timerStopInfo = () => {
+            //     clearInterval(timer)
+            // }
+
+            let monetizationstatus = null
+            let monetizationamount = 0
 
             window.addEventListener("message", (event) => {
                 if (event.data && event.data === "") {
@@ -37,14 +54,36 @@
             }
             if (event.data.type == "monetizationstart") {
                 logMessage(event.data)
+                monetizationstatus = 'pending'
             }
             if (event.data.type == "monetizationprogress") {
                 logMessage(event.data)
+                monetizationamount += event.data.detail.amount
+                if (monetizationamount > 200) {
+                    monetizationstatus = 'monetized'
+                } else {
+                    monetizationstatus = 'pending'
+                }
             }
             if (event.data.type == "monetizationstop") {
                 logMessage(event.data)
+                monetizationstatus = 'stop'
             }
+            onMonetizationStatus()
             })
+
+            const onMonetizationStatus = () => {
+                const el = document.getElementById('txtExtensionStatus')
+                if (monetizationstatus === 'monetized') {
+                    el.className = "moneystream-status-monetized"
+                } else if (monetizationstatus === 'pending') {
+                    el.className = "moneystream-status-pending"
+                } else if (monetizationstatus === 'stop') {
+                    el.className = "moneystream-status-stop"
+                } else {
+                    el.className = "moneystream-status-default"
+                }
+            }
 
             const logMessage = (msg) => {
                 console.log(msg)
@@ -68,6 +107,7 @@
             const whenExtensionDetected = (xtn) => {
                 const txtExtensionName = document.getElementById('txtExtensionName')
                 txtExtensionName.textContent = `${xtn.name}`
+                txtExtensionName.title = `${xtn.name} v${xtn.version} (${xtn.balanceSatoshis})`
                 // ${xtn.version} Balance:${xtn.balanceSatoshis}`
                 const txtExtensionVersion = document.getElementById('txtExtensionVersion')
                 txtExtensionVersion.textContent = `${xtn.version}`
@@ -79,24 +119,24 @@
         </script>
     </head>
     <body>
-        <div>
-            <span id="txtExtensionName">Placeholder</span>
-            <span id="txtExtensionVersion">0.0.0</span>
-            <span id="txtExtensionStatus"></span>
-            <span id="txtExtensionBalance">$0</span>
+        <div class="moneystream">
+            <a class="moneystream" href="https://moneystreamdev.github.io/moneystream-project/" target="_blank"><span id="txtExtensionName" title="MoneyStream v0.0.0">MoneyStream</span></a>
+            <span id="txtExtensionVersion" class="hide">0.0.0</span>
+            <span id="txtExtensionStatus" class="moneystream-status-default" title="MoneyStream Status">&#9926;</span>
+            <span id="txtExtensionBalance" class="moneystream-balance" title="MoneyStream Balance">$0</span>
         </div>
         <!-- <div>
             <button onclick="timerStartInfo()">Start Info Timer</button>
             <button onclick="timerStopInfo()">Stop Info Timer</button>
         </div> -->
-        <div>
-            <button onclick="onInfo()">Extension Info</button>
+        <div class="btn">
+            <button class="moneystream-button" onclick="onInfo()">Extension Info</button>
         </div>
-        <div>
-            <button onclick="onStart()">Monetization Start/Play</button>
+        <div class="btn">
+            <button class="moneystream-button" onclick="onStart()">Monetization Start/Play</button>
         </div>
-        <div>
-            <button onclick="onStop()">Monetization Stop/Pause</button>
+        <div class="btn">
+            <button class="moneystream-button" onclick="onStop()">Monetization Stop/Pause</button>
         </div>
         <pre id='messages'></pre>
     </body>
