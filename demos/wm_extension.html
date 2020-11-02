@@ -27,6 +27,7 @@
 
             let monetizationstatus = null
             let monetizationamount = 0
+            let moneystreambalance = 0
 
             window.addEventListener("message", (event) => {
                 if (event.data && event.data === "") {
@@ -58,7 +59,7 @@
             }
             if (event.data.type == "monetizationprogress") {
                 logMessage(event.data)
-                monetizationamount += event.data.detail.amount
+                monetizationamount += parseInt(event.data.detail.amount,10)
                 if (monetizationamount > 200) {
                     monetizationstatus = 'monetized'
                 } else {
@@ -73,7 +74,10 @@
             })
 
             const onMonetizationStatus = () => {
+                const currentbalance = moneystreambalance - monetizationamount
                 const el = document.getElementById('txtExtensionStatus')
+                const elbalance = document.getElementById('txtExtensionBalance')
+                elbalance.textContent = `${currentbalance}`
                 if (monetizationstatus === 'monetized') {
                     el.className = "moneystream-status-monetized"
                 } else if (monetizationstatus === 'pending') {
@@ -105,6 +109,7 @@
             }
 
             const whenExtensionDetected = (xtn) => {
+                moneystreambalance = xtn.balanceSatoshis
                 const txtExtensionName = document.getElementById('txtExtensionName')
                 txtExtensionName.textContent = `${xtn.name}`
                 txtExtensionName.title = `${xtn.name} v${xtn.version} (${xtn.balanceSatoshis})`

@@ -42,6 +42,11 @@ a.moneystream:link, a.moneystream:visited {
 }
 
 .moneystream-balance {
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 4px;
+    border-color: lightsteelblue;
+    padding: 4px;
     font-family: 'verdana';
     color: lightsteelblue;
     font-size: 18px;
