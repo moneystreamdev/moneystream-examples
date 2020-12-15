@@ -3,16 +3,19 @@
         <title>MoneyStream in Browser</title>
         <script src="https://staging.bitcoinofthings.com/moneystream.js"></script>
         <script>
+            function makeCommand(cmd) {
+                return {command: cmd}
+            }
             document.addEventListener(`DOMContentLoaded`, () => {
                 const btnstop = document.getElementById(`stop`)
                 const btnstart = document.getElementById(`start`)
                 btnstart.addEventListener('click', (e) => {
                     e.preventDefault()
-                    postmess(`start command`)
+                    postmess(makeCommand('start'))
                 })
                 btnstop.addEventListener('click', (e) => {
                     e.preventDefault()
-                    postmess(`stop command`)
+                    postmess(makeCommand('stop'))
                 })
             })
 
@@ -25,7 +28,7 @@
         </script>
     </head>
     <body>
-        This will be a component
+        <div>A test page for moneystream in browser</div>
         <div id="moneystream-placeholder"></div>
         <div class="money-stream"
             data-to="fullcycle@moneybutton.com"
