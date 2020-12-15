@@ -1,16 +1,38 @@
 <html>
     <head>
+        <title>MoneyStream in Browser</title>
         <script src="https://staging.bitcoinofthings.com/moneystream.js"></script>
+        <script>
+            document.addEventListener(`DOMContentLoaded`, () => {
+                const btnstop = document.getElementById(`stop`)
+                const btnstart = document.getElementById(`start`)
+                btnstart.addEventListener('click', (e) => {
+                    e.preventDefault()
+                    postmess(`start command`)
+                })
+                btnstop.addEventListener('click', (e) => {
+                    e.preventDefault()
+                    postmess(`stop command`)
+                })
+            })
+
+            window.onload = function() {
+                window.addEventListener('message', function(e) {
+                    var message = e.data
+                    console.log(message)
+                })
+            }
+        </script>
     </head>
     <body>
         This will be a component
-        <div id="moneystream"></div>
+        <div id="moneystream-placeholder"></div>
         <div class="money-stream"
             data-to="fullcycle@moneybutton.com"
         ></div>
         <div>
-            <button>start</button>
-            <button>stop</button>
+            <button id="start">start</button>
+            <button id="stop">stop</button>
         </div>
     </body>
 </html>
