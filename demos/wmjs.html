@@ -9,6 +9,8 @@
             document.addEventListener(`DOMContentLoaded`, () => {
                 const btnstop = document.getElementById(`stop`)
                 const btnstart = document.getElementById(`start`)
+                const btnupdate = document.getElementById(`update`)
+                const btnbalance = document.getElementById(`balance`)
                 btnstart.addEventListener('click', (e) => {
                     e.preventDefault()
                     postmess(makeCommand('start'))
@@ -16,6 +18,14 @@
                 btnstop.addEventListener('click', (e) => {
                     e.preventDefault()
                     postmess(makeCommand('stop'))
+                })
+                btnupdate.addEventListener('click', (e) => {
+                    e.preventDefault()
+                    postmess(makeCommand('balance'))
+                })
+                btnbalance.addEventListener('click', (e) => {
+                    e.preventDefault()
+                    postmess(makeCommand('getbalance'))
                 })
             })
 
@@ -26,6 +36,11 @@
                 })
             }
         </script>
+        <style>
+            .money-stream {
+                height: 28px;
+            }
+        </style>
     </head>
     <body>
         <div>A test page for moneystream in browser</div>
@@ -36,6 +51,8 @@
         <div>
             <button id="start">start</button>
             <button id="stop">stop</button>
+            <button id="update">update</button>
+            <button id="balance">balance</button>
         </div>
     </body>
 </html>
