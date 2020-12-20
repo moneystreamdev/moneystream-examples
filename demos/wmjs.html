@@ -1,12 +1,14 @@
 <html>
     <head>
         <title>MoneyStream in Browser</title>
-        <script src="https://staging.bitcoinofthings.com/moneystream.js"></script>
+        <script type="module" src="https://staging.bitcoinofthings.com/moneystream.js"></script>
         <script>
             function makeCommand(cmd) {
                 return {command: cmd}
             }
             document.addEventListener(`DOMContentLoaded`, () => {
+                //TODO: improve getting reference to module export
+                const postmess = window.postmess
                 const btnstop = document.getElementById(`stop`)
                 const btnstart = document.getElementById(`start`)
                 const btnupdate = document.getElementById(`update`)
@@ -25,6 +27,8 @@
                 })
                 btnbalance.addEventListener('click', (e) => {
                     e.preventDefault()
+                    //TODO: check origin???
+                    console.log(e)
                     postmess(makeCommand('getbalance'))
                 })
             })
@@ -37,22 +41,26 @@
             }
         </script>
         <style>
-            .money-stream {
-                height: 28px;
-            }
+            /* .moneystream {
+                height: 40px;
+            } */
         </style>
     </head>
     <body>
         <div>A test page for moneystream in browser</div>
-        <div id="moneystream-placeholder"></div>
-        <div class="money-stream"
+        <div id="moneystream-placeholder" class="moneystream"
             data-to="fullcycle@moneybutton.com"
         ></div>
         <div>
-            <button id="start">start</button>
-            <button id="stop">stop</button>
-            <button id="update">update</button>
-            <button id="balance">balance</button>
+            <div>
+                Application goes here
+            </div>
+            <div>
+                <button id="start">start</button>
+                <button id="stop">stop</button>
+                <button id="update">update</button>
+                <button id="balance">balance</button>
+            </div>
         </div>
     </body>
 </html>
